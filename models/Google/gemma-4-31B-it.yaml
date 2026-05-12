@@ -3,7 +3,7 @@ meta:
   slug: "gemma-4-31b-it"
   provider: "Google"
   description: "Google's unified multimodal Gemma 4 dense model (31B) with native text, image, and audio, plus thinking mode and tool-use protocol."
-  date_updated: 2026-04-17
+  date_updated: 2026-05-11
   difficulty: intermediate
   tasks:
     - multimodal
@@ -72,6 +72,14 @@ variants:
     precision: bf16
     vram_minimum_gb: 75
     description: "Full BF16 — single 80 GB NVIDIA GPU or 1x MI300X/MI325X/MI350X/MI355X"
+  fp8:
+    model_id: "RedHatAI/gemma-4-31B-it-FP8-dynamic"
+    precision: fp8
+    vram_minimum_gb: 38
+    description: "FP8 (E4M3) linear weights with dynamic per-token activation quantization (vision tower stays BF16) — Hopper or Blackwell"
+    extra_args:
+      - "--kv-cache-dtype"
+      - "fp8"
   nvfp4:
     model_id: "nvidia/gemma-4-31B-it-NVFP4"
     precision: nvfp4
@@ -290,6 +298,15 @@ guide: |
   - `--async-scheduling` improves throughput.
   - FP8 KV cache (`--kv-cache-dtype fp8`) saves ~50% KV memory.
 
+  ## Quantized Variants
+
+  Two pre-quantized checkpoints are available:
+
+  - [`RedHatAI/gemma-4-31B-it-FP8-dynamic`](https://huggingface.co/RedHatAI/gemma-4-31B-it-FP8-dynamic) — FP8 (E4M3) linear weights with dynamic per-token activation quantization (vision tower stays BF16); runs on Hopper and Blackwell.
+  - [`nvidia/gemma-4-31B-it-NVFP4`](https://huggingface.co/nvidia/gemma-4-31B-it-NVFP4) — NVFP4 (4-bit) weights; requires Blackwell (B200/B300).
+
+  Pick them from the **Variant** dropdown above, or pass the repo id directly to `vllm serve`.
+
   ## Throughput vs Latency
 
   | Goal | TP | `--max-num-seqs` | Notes |
@@ -317,6 +334,8 @@ guide: |
   ## References
 
   - [Model card](https://huggingface.co/google/gemma-4-31B-it)
+  - [FP8 variant](https://huggingface.co/RedHatAI/gemma-4-31B-it-FP8-dynamic)
+  - [NVFP4 variant](https://huggingface.co/nvidia/gemma-4-31B-it-NVFP4)
   - [Gemma docs](https://ai.google.dev/gemma/docs)
   - [vLLM Gemma 4 tool-call template](https://github.com/vllm-project/vllm/blob/main/examples/tool_chat_template_gemma4.jinja)
   - [TPU recipes: Trillium](https://github.com/AI-Hypercomputer/tpu-recipes/tree/main/inference/trillium/vLLM/Gemma4)
