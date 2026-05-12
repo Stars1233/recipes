@@ -571,6 +571,13 @@ export function resolveCommand(recipe, variantKey, strategyName, hwProfileId, en
         // Dedicated node(s) — each node owns all its local GPUs. Same value
         // is correct whether the pool is DEP (vllm spawns local ranks) or TP.
         env.CUDA_VISIBLE_DEVICES = Array.from({ length: gpuCount }, (_, i) => i).join(",");
+        // Cross-node NCCL/GLOO for this role only kicks in when the role
+        // spans 2+ nodes. Single-node roles use NIXL for cross-role transfer
+        // and don't need socket-iface hints.
+        if (rolePoolNodes >= 2) {
+          env.GLOO_SOCKET_IFNAME = "$IFACE_NAME";
+          env.NCCL_SOCKET_IFNAME = "$IFACE_NAME";
+        }
       } else {
         // Co-located demo: first half for prefill, second half for decode.
         const half = Math.floor(gpuCount / 2);
@@ -688,6 +695,8 @@ export function resolveCommand(recipe, variantKey, strategyName, hwProfileId, en
   // their double quotes stripped by bash.
   function shellQuote(s) {
     if (typeof s !== "string" || s.length === 0) return s;
+    // Bare $VAR references must stay unquoted so bash expands them at runtime.
+    if (/^\$[A-Z_][A-Z0-9_]*$/.test(s)) return s;
     if (/^[A-Za-z0-9_./=:@,+%-]+$/.test(s)) return s;
     return `'${s.replace(/'/g, "'\\''")}'`;
   }
