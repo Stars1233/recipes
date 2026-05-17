@@ -14,8 +14,6 @@ meta:
 model:
   model_id: "inclusionAI/Ring-2.6-1T"
   min_vllm_version: "0.20.2"
-  docker_image:
-    amd: "vllm/vllm-openai-rocm:v0.20.2"
   architecture: moe
   parameter_count: "1T"
   active_parameters: "50B"
@@ -42,6 +40,7 @@ compatible_strategies:
   - multi_node_tp_pp
   - multi_node_tep
   - multi_node_dep
+  - pd_cluster
 
 hardware_overrides:
   amd:
